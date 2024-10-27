@@ -29,6 +29,7 @@ export const DashboardComponent: React.FC = () => {
   const [taskToDelete, setTaskToDelete] = useState<Task | null>(null);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [showTaskForm, setShowTaskForm] = useState(false);
+  const [isDragged, setIsDragged] = useState(false);
   const [taskForm, setTaskForm] = useState<TaskFormData>(emptyTaskForm);
 
   const handleCreateTask = () => {
@@ -64,23 +65,66 @@ export const DashboardComponent: React.FC = () => {
     setTaskToDelete(null);
   };
 
-  const filteredAndSortedTasks = tasks
-    .filter((task) => {
-      const matchesStatus =
-        filterStatus === "all" || task.status === filterStatus;
-      const matchesSearch =
-        task.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        task.description.toLowerCase().includes(searchQuery.toLowerCase());
-      return matchesStatus && matchesSearch;
-    })
-    .sort((a, b) => {
-      const dateA = new Date(a.dueDate);
-      const dateB = new Date(b.dueDate);
-      return sortOrder === "asc"
-        ? dateA.getTime() - dateB.getTime()
-        : dateB.getTime() - dateA.getTime();
-    });
-  console.log("editying task", editingTask);
+  const mappedTasks = (dragged: boolean) => {
+    if (dragged) {
+      return tasks;
+    } else {
+      return tasks
+        .filter((task) => {
+          const matchesStatus =
+            filterStatus === "all" || task.status === filterStatus;
+          const matchesSearch =
+            task.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            task.description.toLowerCase().includes(searchQuery.toLowerCase());
+          return matchesStatus && matchesSearch;
+        })
+        .sort((a, b) => {
+          const dateA = new Date(a.dueDate);
+          const dateB = new Date(b.dueDate);
+          return sortOrder === "asc"
+            ? dateA.getTime() - dateB.getTime()
+            : dateB.getTime() - dateA.getTime();
+        });
+    }
+  };
+
+  const swapTasks = (fromTask: Pick<Task, "id">, toTask: Pick<Task, "id">) => {
+    const taskList = tasks.slice();
+    // console.log("tasklist slice", taskList);
+    const fromIndex = taskList.findIndex((box) => box.id === fromTask.id) ?? -1;
+    const toIndex = taskList.findIndex((box) => box.id === toTask.id) ?? -1;
+
+    if (fromIndex != -1 && toIndex != -1) {
+      const temp = taskList[fromIndex];
+      taskList[fromIndex] = {
+        ...taskList[toIndex],
+        id: taskList[fromIndex].id,
+      };
+      taskList[toIndex] = { ...temp, id: taskList[toIndex].id };
+      setIsDragged(true);
+      setTasks(taskList);
+    }
+  };
+
+  const handleDragStart = (data) => (event) => {
+    // console.log("dragging");
+    const fromTask = JSON.stringify({ id: data.id });
+    event.dataTransfer.setData("dragContent", fromTask);
+  };
+  const handleDragOver = () => (event) => {
+    // console.log("drag over");
+    event.preventDefault();
+    return false;
+  };
+  const handleDrop = (data) => (event) => {
+    // console.log("drag drop");
+    event.preventDefault();
+    const fromTask = JSON.parse(event.dataTransfer.getData("dragContent"));
+    const toTask = { id: data.id };
+    swapTasks(fromTask, toTask);
+    return false;
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 p-4 md:p-6 lg:p-8">
       <div className="max-w-6xl mx-auto">
@@ -93,6 +137,9 @@ export const DashboardComponent: React.FC = () => {
             filterStatus={filterStatus}
             sortOrder={sortOrder}
             searchQuery={searchQuery}
+            updateDrag={() => {
+              setIsDragged(false);
+            }}
             onFilterChange={setFilterStatus}
             onSortChange={setSortOrder}
             onSearchChange={setSearchQuery}
@@ -100,17 +147,25 @@ export const DashboardComponent: React.FC = () => {
           />
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filteredAndSortedTasks.map((task) => {
+            {mappedTasks(isDragged).map((task) => {
               return (
-                <TaskCard
+                <div
+                  className="cursor-move"
                   key={task.id}
-                  task={task}
-                  onEdit={setEditingTask}
-                  onDelete={(task) => {
-                    setTaskToDelete(task);
-                    setShowDeleteConfirm(true);
-                  }}
-                />
+                  draggable={true}
+                  onDragStart={handleDragStart({ id: task.id })}
+                  onDragOver={handleDragOver()}
+                  onDrop={handleDrop({ id: task.id })}
+                >
+                  <TaskCard
+                    task={task}
+                    onEdit={setEditingTask}
+                    onDelete={(task) => {
+                      setTaskToDelete(task);
+                      setShowDeleteConfirm(true);
+                    }}
+                  />
+                </div>
               );
             })}
           </div>
@@ -131,6 +186,8 @@ export const DashboardComponent: React.FC = () => {
               </DialogHeader>
               <TaskForm
                 data={editingTask || taskForm}
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                // @ts-expect-error
                 onChange={editingTask?.id ? setEditingTask : setTaskForm}
               />
               <DialogFooter>

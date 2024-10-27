@@ -18,6 +18,7 @@ interface ControlPanelProps {
   onSortChange: (order: "asc" | "desc") => void;
   onSearchChange: (query: string) => void;
   onCreateClick: () => void;
+  updateDrag: () => void;
 }
 
 export const ControlPanel: React.FC<ControlPanelProps> = ({
@@ -28,6 +29,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
   onSortChange,
   onSearchChange,
   onCreateClick,
+  updateDrag,
 }) => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
@@ -37,11 +39,20 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
           placeholder="Search tasks..."
           className="pl-10"
           value={searchQuery}
-          onChange={(e) => onSearchChange(e.target.value)}
+          onChange={(e) => {
+            onSearchChange(e.target.value);
+            updateDrag();
+          }}
         />
       </div>
 
-      <Select value={filterStatus} onValueChange={onFilterChange}>
+      <Select
+        value={filterStatus}
+        onValueChange={(value) => {
+          onFilterChange(value);
+          updateDrag();
+        }}
+      >
         <SelectTrigger>
           <SelectValue placeholder="Filter by status" />
         </SelectTrigger>
@@ -53,7 +64,13 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
         </SelectContent>
       </Select>
 
-      <Select value={sortOrder} onValueChange={onSortChange}>
+      <Select
+        value={sortOrder}
+        onValueChange={(valueProps: "asc" | "desc") => {
+          onSortChange(valueProps);
+          updateDrag();
+        }}
+      >
         <SelectTrigger>
           <SelectValue placeholder="Sort by due date" />
         </SelectTrigger>
