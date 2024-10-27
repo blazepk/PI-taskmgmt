@@ -200,123 +200,136 @@ export const DashboardComponent: React.FC = () => {
             />
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div
+            className={`grid grid-cols-1 lg:grid-cols-3 gap-6 ${
+              filterStatus !== "all" ? "lg:grid-cols-1" : "lg:grid-cols-3"
+            }`}
+          >
             {/* Pending Column */}
-            <div
-              className="bg-gradient-to-b from-orange-50 to-orange-100 rounded-lg p-4 shadow-md min-h-[500px]"
-              onDragOver={handleDragOver()}
-              onDrop={handleDrop({ id: 123, status: "pending" })}
-            >
-              <h2 className="flex justify-around items-center text-lg font-semibold mb-4 p-2 bg-orange-400 text-white rounded-md text-center">
-                <div className="flex-grow">Pending Tasks </div>
-                <ArrowUpDown
-                  className="h-4 w-4 cursor-pointer"
-                  onClick={() => handleSort("pending")}
-                />
-              </h2>
-              <div className="flex flex-col gap-3">
-                {mappedTasks(isDragged, "pending").map((task) => (
-                  <div
-                    key={task.id}
-                    className="transform transition-all duration-200 hover:-translate-y-1 cursor-move"
-                    draggable={true}
-                    onDragStart={handleDragStart({
-                      id: task.id,
-                      status: "pending",
-                    })}
-                    onDragOver={handleDragOver()}
-                    onDrop={handleDrop({ id: task.id, status: "pending" })}
-                  >
-                    <TaskCard
-                      task={task}
-                      onEdit={setEditingTask}
-                      onDelete={(task) => {
-                        setTaskToDelete(task);
-                        setShowDeleteConfirm(true);
-                      }}
-                    />
-                  </div>
-                ))}
+            {(filterStatus === "all" || filterStatus === "pending") && (
+              <div
+                className="bg-gradient-to-b from-orange-50 to-orange-100 rounded-lg p-4 shadow-md min-h-[500px]"
+                onDragOver={handleDragOver()}
+                onDrop={handleDrop({ id: 123, status: "pending" })}
+              >
+                <h2 className="flex justify-around items-center text-lg font-semibold mb-4 p-2 bg-orange-400 text-white rounded-md text-center">
+                  <div className="flex-grow">Pending Tasks </div>
+                  <ArrowUpDown
+                    className="h-4 w-4 cursor-pointer"
+                    onClick={() => handleSort("pending")}
+                  />
+                </h2>
+                <div className="flex flex-col gap-3">
+                  {mappedTasks(isDragged, "pending").map((task) => (
+                    <div
+                      key={task.id}
+                      className="transform transition-all duration-200 hover:-translate-y-1 cursor-move"
+                      draggable={true}
+                      onDragStart={handleDragStart({
+                        id: task.id,
+                        status: "pending",
+                      })}
+                      onDragOver={handleDragOver()}
+                      onDrop={handleDrop({ id: task.id, status: "pending" })}
+                    >
+                      <TaskCard
+                        task={task}
+                        onEdit={setEditingTask}
+                        onDelete={(task) => {
+                          setTaskToDelete(task);
+                          setShowDeleteConfirm(true);
+                        }}
+                      />
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
 
             {/* In Progress Column */}
-            <div
-              className="bg-gradient-to-b from-blue-50 to-blue-100 rounded-lg p-4 shadow-md min-h-[500px]"
-              onDragOver={handleDragOver()}
-              onDrop={handleDrop({ id: 456, status: "in-progress" })}
-            >
-              <h2 className="flex justify-around items-center text-lg font-semibold mb-4 p-2 bg-blue-400 text-white rounded-md text-center">
-                <div className="flex-grow">In Progress </div>
-                <ArrowUpDown
-                  className="h-4 w-4 cursor-pointer"
-                  onClick={() => handleSort("in-progress")}
-                />
-              </h2>
-              <div className="flex flex-col gap-3">
-                {mappedTasks(isDragged, "in-progress").map((task) => (
-                  <div
-                    key={task.id}
-                    className="transform transition-all duration-200 hover:-translate-y-1 cursor-move"
-                    draggable={true}
-                    onDragStart={handleDragStart({
-                      id: task.id,
-                      status: "in-progress",
-                    })}
-                    onDragOver={handleDragOver()}
-                    onDrop={handleDrop({ id: task.id, status: "in-progress" })}
-                  >
-                    <TaskCard
-                      task={task}
-                      onEdit={setEditingTask}
-                      onDelete={(task) => {
-                        setTaskToDelete(task);
-                        setShowDeleteConfirm(true);
-                      }}
-                    />
-                  </div>
-                ))}
+            {(filterStatus === "all" || filterStatus === "in-progress") && (
+              <div
+                className="bg-gradient-to-b from-blue-50 to-blue-100 rounded-lg p-4 shadow-md min-h-[500px]"
+                onDragOver={handleDragOver()}
+                onDrop={handleDrop({ id: 456, status: "in-progress" })}
+              >
+                <h2 className="flex justify-around items-center text-lg font-semibold mb-4 p-2 bg-blue-400 text-white rounded-md text-center">
+                  <div className="flex-grow">In Progress </div>
+                  <ArrowUpDown
+                    className="h-4 w-4 cursor-pointer"
+                    onClick={() => handleSort("in-progress")}
+                  />
+                </h2>
+                <div className="flex flex-col gap-3">
+                  {mappedTasks(isDragged, "in-progress").map((task) => (
+                    <div
+                      key={task.id}
+                      className="transform transition-all duration-200 hover:-translate-y-1 cursor-move"
+                      draggable={true}
+                      onDragStart={handleDragStart({
+                        id: task.id,
+                        status: "in-progress",
+                      })}
+                      onDragOver={handleDragOver()}
+                      onDrop={handleDrop({
+                        id: task.id,
+                        status: "in-progress",
+                      })}
+                    >
+                      <TaskCard
+                        task={task}
+                        onEdit={setEditingTask}
+                        onDelete={(task) => {
+                          setTaskToDelete(task);
+                          setShowDeleteConfirm(true);
+                        }}
+                      />
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Completed Column */}
-            <div
-              className="bg-gradient-to-b from-green-50 to-green-100 rounded-lg p-4 shadow-md min-h-[500px]"
-              onDragOver={handleDragOver()}
-              onDrop={handleDrop({ id: 789, status: "completed" })}
-            >
-              <h2 className="flex justify-around items-center text-lg font-semibold mb-4 p-2 bg-green-400 text-white rounded-md text-center">
-                <div className="flex-grow">Completed </div>
-                <ArrowUpDown
-                  className="h-4 w-4 cursor-pointer"
-                  onClick={() => handleSort("completed")}
-                />
-              </h2>
-              <div className="flex flex-col gap-3">
-                {mappedTasks(isDragged, "completed").map((task) => (
-                  <div
-                    key={task.id}
-                    className="transform transition-all duration-200 hover:-translate-y-1 cursor-move"
-                    draggable={true}
-                    onDragStart={handleDragStart({
-                      id: task.id,
-                      status: "completed",
-                    })}
-                    onDragOver={handleDragOver()}
-                    onDrop={handleDrop({ id: task.id, status: "completed" })}
-                  >
-                    <TaskCard
-                      task={task}
-                      onEdit={setEditingTask}
-                      onDelete={(task) => {
-                        setTaskToDelete(task);
-                        setShowDeleteConfirm(true);
-                      }}
-                    />
-                  </div>
-                ))}
+            {(filterStatus === "all" || filterStatus === "completed") && (
+              <div
+                className="bg-gradient-to-b from-green-50 to-green-100 rounded-lg p-4 shadow-md min-h-[500px]"
+                onDragOver={handleDragOver()}
+                onDrop={handleDrop({ id: 789, status: "completed" })}
+              >
+                <h2 className="flex justify-around items-center text-lg font-semibold mb-4 p-2 bg-green-400 text-white rounded-md text-center">
+                  <div className="flex-grow">Completed </div>
+                  <ArrowUpDown
+                    className="h-4 w-4 cursor-pointer"
+                    onClick={() => handleSort("completed")}
+                  />
+                </h2>
+                <div className="flex flex-col gap-3">
+                  {mappedTasks(isDragged, "completed").map((task) => (
+                    <div
+                      key={task.id}
+                      className="transform transition-all duration-200 hover:-translate-y-1 cursor-move"
+                      draggable={true}
+                      onDragStart={handleDragStart({
+                        id: task.id,
+                        status: "completed",
+                      })}
+                      onDragOver={handleDragOver()}
+                      onDrop={handleDrop({ id: task.id, status: "completed" })}
+                    >
+                      <TaskCard
+                        task={task}
+                        onEdit={setEditingTask}
+                        onDelete={(task) => {
+                          setTaskToDelete(task);
+                          setShowDeleteConfirm(true);
+                        }}
+                      />
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
           </div>
 
           {/* Task Form Dialog */}
