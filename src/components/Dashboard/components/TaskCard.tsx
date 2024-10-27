@@ -16,27 +16,41 @@ export const TaskCard: React.FC<TaskCardProps> = ({
   onDelete,
 }) => {
   return (
-    <Card className="relative">
-      <CardHeader>
-        <CardTitle className="pr-8">{task.title}</CardTitle>
-        <div className="absolute top-4 right-4 flex space-x-2">
-          <Button variant="ghost" size="icon" onClick={() => onEdit(task)}>
-            <Edit className="h-4 w-4" />
+    <Card className="relative group hover:shadow-lg transition-shadow duration-200">
+      <CardHeader className="pb-3">
+        <CardTitle className="pr-20 text-lg font-semibold line-clamp-2">
+          {task.title}
+        </CardTitle>
+        <div className="absolute top-4 right-4 flex space-x-1">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => onEdit(task)}
+            className="opacity-70 hover:opacity-100 hover:bg-gray-100"
+          >
+            <Edit className="h-4 w-4 text-gray-600" />
           </Button>
-          <Button variant="ghost" size="icon" onClick={() => onDelete(task)}>
-            <Trash2 className="h-4 w-4" />
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => onDelete(task)}
+            className="opacity-70 hover:opacity-100 hover:bg-red-50"
+          >
+            <Trash2 className="h-4 w-4 text-red-500" />
           </Button>
         </div>
       </CardHeader>
       <CardContent>
-        <p className="text-gray-600 mb-4">{task.description}</p>
-        <div className="flex items-center space-x-4 text-sm text-gray-500">
-          <div className="flex items-center">
-            <Calendar className="h-4 w-4 mr-1" />
+        <p className="text-gray-600 mb-6 text-sm line-clamp-3">
+          {task.description}
+        </p>
+        <div className="flex items-center justify-between text-xs text-gray-500">
+          <div className="flex items-center bg-gray-50 rounded-full px-3 py-1">
+            <Calendar className="h-3.5 w-3.5 mr-1.5 text-gray-400" />
             {new Date(task.dueDate).toLocaleDateString()}
           </div>
-          <div className="flex items-center">
-            <Clock className="h-4 w-4 mr-1" />
+          <div className="flex items-center bg-gray-50 rounded-full px-3 py-1">
+            <Clock className="h-3.5 w-3.5 mr-1.5 text-gray-400" />
             {task.status}
           </div>
         </div>
@@ -44,3 +58,5 @@ export const TaskCard: React.FC<TaskCardProps> = ({
     </Card>
   );
 };
+
+export default TaskCard;
