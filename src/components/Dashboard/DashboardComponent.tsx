@@ -1,4 +1,7 @@
 import React, { useState } from "react";
+import { z } from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Dialog,
   DialogContent,
@@ -6,34 +9,54 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { TaskCard } from "./components/TaskCard";
-import { TaskForm } from "./components/TaskForm";
 import { ControlPanel } from "./components/TaskControls";
 import { useLocalStorage } from "@/hooks/useLocalstorage";
-import { Task, TaskFormData } from "@/types/dashboard.types";
+import { Task } from "@/types/dashboard.types";
 import { ArrowUpDown } from "lucide-react";
 
-const emptyTaskForm: TaskFormData = {
-  title: "",
-  description: "",
-  status: "pending",
-  dueDate: "",
-};
+// Zod schema for task validation
+const taskSchema = z.object({
+  title: z
+    .string()
+    .min(1, "Title is required")
+    .max(100, "Title must be less than 100 characters"),
+  description: z
+    .string()
+    .max(500, "Description must be less than 500 characters")
+    .optional(),
+  status: z.enum(["pending", "in-progress", "completed"]),
+  dueDate: z
+    .string()
+    .min(1, "Due date is required")
+    .refine((date) => new Date(date) > new Date(), {
+      message: "Due date must be in the future",
+    }),
+});
+
+type TaskFormData = z.infer<typeof taskSchema>;
 
 const INITIAL_SORT_ORDER = [
-  {
-    status: "pending",
-    sort: "asc",
-  },
-  {
-    status: "in-progress",
-    sort: "asc",
-  },
-  {
-    status: "completed",
-    sort: "asc",
-  },
+  { status: "pending", sort: "asc" },
+  { status: "in-progress", sort: "asc" },
+  { status: "completed", sort: "asc" },
 ];
 
 export const DashboardComponent: React.FC = () => {
@@ -45,34 +68,41 @@ export const DashboardComponent: React.FC = () => {
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [showTaskForm, setShowTaskForm] = useState(false);
   const [isDragged, setIsDragged] = useState(false);
-  const [taskForm, setTaskForm] = useState<TaskFormData>(emptyTaskForm);
   const [sortStatus, setSortStatus] = useState(INITIAL_SORT_ORDER);
 
-  const handleCreateTask = () => {
-    if (!taskForm.title || !taskForm.dueDate) return;
+  const form = useForm<TaskFormData>({
+    resolver: zodResolver(taskSchema),
+    defaultValues: {
+      title: "",
+      description: "",
+      status: "pending",
+      dueDate: "",
+    },
+  });
 
+  const handleCreateTask = (data: TaskFormData) => {
     const newTask: Task = {
       id: Date.now(),
-      ...taskForm,
+      ...data,
       createdAt: new Date().toISOString(),
     };
 
     setTasks([...tasks, newTask]);
-    setTaskForm(emptyTaskForm);
+    form.reset();
     setShowTaskForm(false);
   };
 
-  const handleUpdateTask = () => {
-    if (!editingTask || !editingTask.title || !editingTask.dueDate) return;
+  const handleUpdateTask = (data: TaskFormData) => {
+    if (!editingTask) return;
 
     const updatedTasks = tasks.map((t) =>
-      t.id === editingTask.id ? editingTask : t
+      t.id === editingTask.id ? { ...editingTask, ...data } : t
     );
 
     setTasks(updatedTasks);
     setEditingTask(null);
+    form.reset();
   };
-
   const handleDeleteTask = () => {
     if (!taskToDelete) return;
 
@@ -322,10 +352,12 @@ export const DashboardComponent: React.FC = () => {
           {/* Task Form Dialog */}
           <Dialog
             open={showTaskForm || !!editingTask?.id}
-            onOpenChange={() => {
-              setShowTaskForm(false);
-              setEditingTask(null);
-              setTaskForm(emptyTaskForm);
+            onOpenChange={(open) => {
+              if (!open) {
+                setShowTaskForm(false);
+                setEditingTask(null);
+                form.reset();
+              }
             }}
           >
             <DialogContent className="sm:max-w-md">
@@ -334,24 +366,99 @@ export const DashboardComponent: React.FC = () => {
                   {editingTask?.id ? "Edit Task" : "Create New Task"}
                 </DialogTitle>
               </DialogHeader>
-              <TaskForm
-                data={editingTask || taskForm}
-                // @ts-ignore
-                onChange={editingTask?.id ? setEditingTask : setTaskForm}
-              />
-              <DialogFooter>
-                <Button
-                  onClick={editingTask ? handleUpdateTask : handleCreateTask}
-                  disabled={
-                    editingTask
-                      ? !editingTask?.title || !editingTask?.dueDate
-                      : !taskForm.title || !taskForm.dueDate
-                  }
-                  className="w-full sm:w-auto"
+              <Form {...form}>
+                <form
+                  onSubmit={form.handleSubmit(
+                    editingTask ? handleUpdateTask : handleCreateTask
+                  )}
+                  className="space-y-4"
                 >
-                  {editingTask ? "Update Task" : "Create Task"}
-                </Button>
-              </DialogFooter>
+                  <FormField
+                    control={form.control}
+                    name="title"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Title</FormLabel>
+                        <FormControl>
+                          <Input {...field} placeholder="Enter task title" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="description"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Description</FormLabel>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            placeholder="Enter task description"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="dueDate"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Due Date</FormLabel>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            type="datetime-local"
+                            min={new Date().toISOString().slice(0, 16)}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="status"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Status</FormLabel>
+                        <Select
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select a status" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="pending">Pending</SelectItem>
+                            <SelectItem value="in-progress">
+                              In Progress
+                            </SelectItem>
+                            <SelectItem value="completed">Completed</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <DialogFooter>
+                    <Button
+                      type="submit"
+                      className="w-full sm:w-auto"
+                      disabled={!form.formState.isValid}
+                    >
+                      {editingTask ? "Update Task" : "Create Task"}
+                    </Button>
+                  </DialogFooter>
+                </form>
+              </Form>
             </DialogContent>
           </Dialog>
 

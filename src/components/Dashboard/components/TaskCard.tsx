@@ -1,5 +1,12 @@
 import React from "react";
-import { Calendar, Clock, Edit, Trash2 } from "lucide-react";
+import {
+  Calendar,
+  CheckCircle2,
+  Circle,
+  Clock,
+  Edit,
+  Trash2,
+} from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Task } from "@/types/dashboard.types";
@@ -49,8 +56,14 @@ export const TaskCard: React.FC<TaskCardProps> = ({
             <Calendar className="h-3.5 w-3.5 mr-1.5 text-gray-400" />
             {new Date(task.dueDate).toLocaleDateString()}
           </div>
-          <div className="flex items-center bg-gray-50 rounded-full px-3 py-1">
-            <Clock className="h-3.5 w-3.5 mr-1.5 text-gray-400" />
+          <div className="flex items-center gap-x-2 bg-gray-50 rounded-full px-3 py-1">
+            {task.status === "completed" ? (
+              <CheckCircle2 className="w-5 h-5 text-green-500" />
+            ) : task.status === "in-progress" ? (
+              <Clock className="w-5 h-5 text-yellow-500" />
+            ) : (
+              <Circle className="w-5 h-5 text-gray-400" />
+            )}
             {task.status}
           </div>
         </div>
