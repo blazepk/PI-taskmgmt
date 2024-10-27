@@ -1,50 +1,78 @@
-# React + TypeScript + Vite
+# Installation Guide for React + Vite Project
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## Prerequisites
 
-Currently, two official plugins are available:
+Before you begin, ensure you have the following installed:
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- Node.js (version 18.0.0 or higher)
+- npm (version 8.0.0 or higher) or yarn
 
-## Expanding the ESLint configuration
+## Installation Steps
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+1. Clone the repository
 
-- Configure the top-level `parserOptions` property like this:
-
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+```bash
+git clone <your-repository-url>
+cd <project-directory>
 ```
 
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
+2. Install dependencies
 
-```js
-// eslint.config.js
-import react from 'eslint-plugin-react'
-
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: '18.3' } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-})
+```bash
+npm install
+# or if using yarn
+yarn
 ```
+
+3. Set up environment variables
+
+```bash
+cp .env.example .env
+```
+
+Edit the `.env` file with your configuration values.
+
+4. Start the development server
+
+```bash
+npm run dev
+# or if using yarn
+yarn dev
+```
+
+The application will be available at `http://localhost:5173` by default.
+
+## Build for Production
+
+To create a production build:
+
+```bash
+npm run build
+# or if using yarn
+yarn build
+```
+
+The built files will be in the `dist` directory.
+
+## Additional Scripts
+
+- `npm run preview`: Preview the production build locally
+- `npm run lint`: Run ESLint to check code quality
+- `npm run test`: Run tests (if configured)
+
+## Troubleshooting
+
+### Common Issues
+
+1. **Port 5173 already in use**
+
+   - Kill the process using the port or change the port in `vite.config.js`
+
+2. **Node version conflicts**
+
+   - Use nvm to switch to the correct Node version
+   - Check `.nvmrc` file for the required version
+
+3. **Module not found errors**
+   - Delete `node_modules` and package-lock.json/yarn.lock
+   - Run `npm install` or `yarn` again

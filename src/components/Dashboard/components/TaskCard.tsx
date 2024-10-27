@@ -41,7 +41,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
         </div>
       </CardHeader>
       <CardContent>
-        <p className="text-gray-600 mb-6 text-sm line-clamp-3">
+        <p className="text-gray-600 mb-6 text-sm line-clamp-3 h-8">
           {task.description}
         </p>
         <div className="flex items-center justify-between text-xs text-gray-500">
