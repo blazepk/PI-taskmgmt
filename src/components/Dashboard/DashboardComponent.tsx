@@ -65,11 +65,12 @@ export const DashboardComponent: React.FC = () => {
     setTaskToDelete(null);
   };
 
-  const mappedTasks = (dragged: boolean) => {
+  const mappedTasks = (dragged: boolean, type = "pending") => {
     if (dragged) {
-      return tasks;
+      return tasks.filter((task) => task.status === type);
     } else {
       return tasks
+        .filter((task) => task.status === type)
         .filter((task) => {
           const matchesStatus =
             filterStatus === "all" || task.status === filterStatus;
@@ -88,27 +89,50 @@ export const DashboardComponent: React.FC = () => {
     }
   };
 
-  const swapTasks = (fromTask: Pick<Task, "id">, toTask: Pick<Task, "id">) => {
-    const taskList = tasks.slice();
+  const swapTasks = (
+    fromTask: { id: number; status: "pending" | "in-progress" | "completed" },
+    toTask: { id: number; status: "pending" | "in-progress" | "completed" }
+  ) => {
+    let taskList = tasks.slice();
     // console.log("tasklist slice", taskList);
-    const fromIndex = taskList.findIndex((box) => box.id === fromTask.id) ?? -1;
-    const toIndex = taskList.findIndex((box) => box.id === toTask.id) ?? -1;
+    const fromIndex =
+      taskList.findIndex((task) => task.id === fromTask.id) ?? -1;
+    const toIndex = taskList.findIndex((task) => task.id === toTask.id) ?? -1;
+    const isStatusUpdated = fromTask.status !== toTask.status;
+    console.log("from to", fromTask, toTask);
+    if (isStatusUpdated) {
+      taskList = taskList.map((item) => {
+        if (item.id === fromTask.id) {
+          item.status = toTask.status;
+          return item;
+        }
+        return item;
+      });
+      // const temp = taskList[toIndex];
+      // taskList[toIndex] = {
+      //   ...taskList[fromIndex],
+      // };
+      // taskList[fromIndex] = null;
+      // taskList[toIndex + 1] = { ...temp };
+      setTasks(taskList.filter((item) => item !== null));
+      console.log("taskList", taskList);
+      return;
+    }
 
-    if (fromIndex != -1 && toIndex != -1) {
+    if (fromIndex != -1 && toIndex != -1 && !isStatusUpdated) {
       const temp = taskList[fromIndex];
       taskList[fromIndex] = {
         ...taskList[toIndex],
-        id: taskList[fromIndex].id,
       };
-      taskList[toIndex] = { ...temp, id: taskList[toIndex].id };
+      taskList[toIndex] = { ...temp };
       setIsDragged(true);
       setTasks(taskList);
     }
   };
 
   const handleDragStart = (data) => (event) => {
-    // console.log("dragging");
-    const fromTask = JSON.stringify({ id: data.id });
+    console.log("dragging", data);
+    const fromTask = JSON.stringify({ id: data.id, status: data.status });
     event.dataTransfer.setData("dragContent", fromTask);
   };
   const handleDragOver = () => (event) => {
@@ -117,10 +141,13 @@ export const DashboardComponent: React.FC = () => {
     return false;
   };
   const handleDrop = (data) => (event) => {
-    // console.log("drag drop");
+    console.log("drag drop", data);
     event.preventDefault();
     const fromTask = JSON.parse(event.dataTransfer.getData("dragContent"));
-    const toTask = { id: data.id };
+    const toTask = { id: data.id, status: data.status } as {
+      id: number;
+      status: "pending" | "in-progress" | "completed";
+    };
     swapTasks(fromTask, toTask);
     return false;
   };
@@ -132,7 +159,6 @@ export const DashboardComponent: React.FC = () => {
           <h1 className="text-3xl font-bold text-gray-900 mb-4">
             Task Dashboard
           </h1>
-
           <ControlPanel
             filterStatus={filterStatus}
             sortOrder={sortOrder}
@@ -145,31 +171,110 @@ export const DashboardComponent: React.FC = () => {
             onSearchChange={setSearchQuery}
             onCreateClick={() => setShowTaskForm(true)}
           />
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {mappedTasks(isDragged).map((task) => {
-              return (
-                <div
-                  className="cursor-move"
-                  key={task.id}
-                  draggable={true}
-                  onDragStart={handleDragStart({ id: task.id })}
-                  onDragOver={handleDragOver()}
-                  onDrop={handleDrop({ id: task.id })}
-                >
-                  <TaskCard
-                    task={task}
-                    onEdit={setEditingTask}
-                    onDelete={(task) => {
-                      setTaskToDelete(task);
-                      setShowDeleteConfirm(true);
-                    }}
-                  />
-                </div>
-              );
-            })}
+          <div className="grid grid-cols-1 gap-y-4 md:grid-cols-3 md:gap-x-4 overflow-auto min-h-96">
+            <div
+              className="bg-red-500"
+              onDragOver={handleDragOver()}
+              onDrop={handleDrop({ id: 123, status: "pending" })}
+            >
+              Pending Tasks
+              <div className="flex flex-row md:flex-col gap-x-3 md:gap-y-3">
+                {mappedTasks(isDragged, "pending").map((task) => {
+                  return (
+                    <div
+                      className="cursor-move"
+                      key={task.id}
+                      draggable={true}
+                      onDragStart={handleDragStart({
+                        id: task.id,
+                        status: "pending",
+                      })}
+                      onDragOver={handleDragOver()}
+                      onDrop={handleDrop({ id: task.id, status: "pending" })}
+                    >
+                      <TaskCard
+                        task={task}
+                        onEdit={setEditingTask}
+                        onDelete={(task) => {
+                          setTaskToDelete(task);
+                          setShowDeleteConfirm(true);
+                        }}
+                      />
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+            <div
+              className="bg-green-500"
+              onDragOver={handleDragOver()}
+              onDrop={handleDrop({ id: 456, status: "in-progress" })}
+            >
+              In Progress
+              <div className="flex flex-row md:flex-col gap-x-3 md:gap-y-3 overflow-auto">
+                {mappedTasks(isDragged, "in-progress").map((task) => {
+                  return (
+                    <div
+                      className="cursor-move"
+                      key={task.id}
+                      draggable={true}
+                      onDragStart={handleDragStart({
+                        id: task.id,
+                        status: "in-progress",
+                      })}
+                      onDragOver={handleDragOver()}
+                      onDrop={handleDrop({
+                        id: task.id,
+                        status: "in-progress",
+                      })}
+                    >
+                      <TaskCard
+                        task={task}
+                        onEdit={setEditingTask}
+                        onDelete={(task) => {
+                          setTaskToDelete(task);
+                          setShowDeleteConfirm(true);
+                        }}
+                      />
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+            <div
+              className="bg-pink-600"
+              onDragOver={handleDragOver()}
+              onDrop={handleDrop({ id: 789, status: "completed" })}
+            >
+              Completed
+              <div className="flex flex-row md:flex-col gap-x-3 md:gap-y-3 overflow-auto">
+                {mappedTasks(isDragged, "completed").map((task) => {
+                  return (
+                    <div
+                      className="cursor-move"
+                      key={task.id}
+                      draggable={true}
+                      onDragStart={handleDragStart({
+                        id: task.id,
+                        status: "completed",
+                      })}
+                      onDragOver={handleDragOver()}
+                      onDrop={handleDrop({ id: task.id, status: "completed" })}
+                    >
+                      <TaskCard
+                        task={task}
+                        onEdit={setEditingTask}
+                        onDelete={(task) => {
+                          setTaskToDelete(task);
+                          setShowDeleteConfirm(true);
+                        }}
+                      />
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
           </div>
-
           <Dialog
             open={showTaskForm || !!editingTask?.id}
             onOpenChange={() => {
@@ -204,7 +309,6 @@ export const DashboardComponent: React.FC = () => {
               </DialogFooter>
             </DialogContent>
           </Dialog>
-
           {/* Delete Confirmation Dialog */}
           <Dialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
             <DialogContent>
