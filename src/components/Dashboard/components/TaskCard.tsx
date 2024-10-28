@@ -23,7 +23,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
   onDelete,
 }) => {
   return (
-    <Card className="relative group hover:shadow-lg transition-shadow duration-200">
+    <Card className="relative group hover:shadow-lg transition-shadow duration-200 max-w-md">
       <CardHeader className="pb-3">
         <CardTitle className="pr-20 text-lg font-semibold line-clamp-2">
           {task.title}

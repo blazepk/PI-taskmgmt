@@ -13,6 +13,7 @@ import { ControlPanel } from "./components/TaskControls";
 import { useLocalStorage } from "@/hooks/useLocalstorage";
 import { Task, TaskFormData } from "@/types/dashboard.types";
 import { ArrowUpDown } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 const emptyTaskForm: TaskFormData = {
   title: "",
@@ -201,9 +202,10 @@ export const DashboardComponent: React.FC = () => {
           </div>
 
           <div
-            className={`grid grid-cols-1 lg:grid-cols-3 gap-6 ${
+            className={cn(
+              `grid grid-cols-1 lg:grid-cols-3 gap-6 `,
               filterStatus !== "all" ? "lg:grid-cols-1" : "lg:grid-cols-3"
-            }`}
+            )}
           >
             {/* Pending Column */}
             {(filterStatus === "all" || filterStatus === "pending") && (
@@ -219,11 +221,18 @@ export const DashboardComponent: React.FC = () => {
                     onClick={() => handleSort("pending")}
                   />
                 </h2>
-                <div className="flex flex-col gap-3">
+                <div
+                  className={cn(
+                    "flex flex-col gap-3 w-full",
+                    filterStatus !== "all"
+                      ? "lg:flex-row lg:justify-evenly"
+                      : "lg:flex-col"
+                  )}
+                >
                   {mappedTasks(isDragged, "pending").map((task) => (
                     <div
                       key={task.id}
-                      className="transform transition-all duration-200 hover:-translate-y-1 cursor-move"
+                      className="transform transition-all duration-200 hover:-translate-y-1 cursor-move w-full"
                       draggable={true}
                       onDragStart={handleDragStart({
                         id: task.id,
