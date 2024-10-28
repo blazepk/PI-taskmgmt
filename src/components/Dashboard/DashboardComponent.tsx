@@ -225,14 +225,14 @@ export const DashboardComponent: React.FC = () => {
                   className={cn(
                     "flex flex-col gap-3 w-full",
                     filterStatus !== "all"
-                      ? "lg:flex-row lg:justify-evenly"
+                      ? "lg:flex-row lg:justify-start lg:flex-wrap"
                       : "lg:flex-col"
                   )}
                 >
                   {mappedTasks(isDragged, "pending").map((task) => (
                     <div
                       key={task.id}
-                      className="transform transition-all duration-200 hover:-translate-y-1 cursor-move w-full"
+                      className="transform transition-all duration-200 hover:-translate-y-1 cursor-move w-full max-w-sm"
                       draggable={true}
                       onDragStart={handleDragStart({
                         id: task.id,
@@ -269,11 +269,18 @@ export const DashboardComponent: React.FC = () => {
                     onClick={() => handleSort("in-progress")}
                   />
                 </h2>
-                <div className="flex flex-col gap-3">
+                <div
+                  className={cn(
+                    "flex flex-col gap-3 w-full",
+                    filterStatus !== "all"
+                      ? "lg:flex-row lg:justify-start lg:flex-wrap"
+                      : "lg:flex-col"
+                  )}
+                >
                   {mappedTasks(isDragged, "in-progress").map((task) => (
                     <div
                       key={task.id}
-                      className="transform transition-all duration-200 hover:-translate-y-1 cursor-move"
+                      className="transform transition-all duration-200 hover:-translate-y-1 cursor-move w-full max-w-sm"
                       draggable={true}
                       onDragStart={handleDragStart({
                         id: task.id,
@@ -313,11 +320,18 @@ export const DashboardComponent: React.FC = () => {
                     onClick={() => handleSort("completed")}
                   />
                 </h2>
-                <div className="flex flex-col gap-3">
+                <div
+                  className={cn(
+                    "flex flex-col gap-3 w-full",
+                    filterStatus !== "all"
+                      ? "lg:flex-row lg:justify-start lg:flex-wrap"
+                      : "lg:flex-col"
+                  )}
+                >
                   {mappedTasks(isDragged, "completed").map((task) => (
                     <div
                       key={task.id}
-                      className="transform transition-all duration-200 hover:-translate-y-1 cursor-move"
+                      className="transform transition-all duration-200 hover:-translate-y-1 cursor-move w-full max-w-sm"
                       draggable={true}
                       onDragStart={handleDragStart({
                         id: task.id,
